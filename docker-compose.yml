@@ -1,0 +1,31 @@
+services:
+  juca_node:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: juca_localization:latest
+    container_name: juca_localization
+    stdin_open: true
+    tty: true
+    network_mode: "host"       # Critical for DDS multicast, Gazebo sockets, and local MQTT
+    ipc: "host"
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      # Mount entire repo into the workspace
+      - ./:/ros2_ws
+      # Persistent logs from your Python scripts
+      - ./logs:/ros2_ws/logs
+      # Native Linux X11 socket
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ~/.Xauthority:/root/.Xauthority:rw
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
